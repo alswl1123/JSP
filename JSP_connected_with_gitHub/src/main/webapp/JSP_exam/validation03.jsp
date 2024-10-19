@@ -24,13 +24,21 @@ function checkLogin() {
 		return;
 	}
 	
+	if(!isNaN(document.loginForm.name.value.substr(0, 1))) {
+		alert("이름은 숫자로 시작할 수 없습니다!");
+		document.loginForm.name.select();
+	}
+	
+	else {
 	form.submit();	
+	}
 }
 
 </script>
 
 <body>
 <form name = "loginForm" action = "8_3" method = "post">
+<p>이름 : <input type = "text" name = "name">
 <p>아이디 : <input type = "text" name = "id" id = "id">
 <p>비밀번호 : <input type = "password" name = "pw" id = "pw">
 <p><input type = "button" value = "전송" onclick = "checkLogin()">

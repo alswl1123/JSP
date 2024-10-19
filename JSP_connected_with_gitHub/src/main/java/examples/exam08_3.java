@@ -20,12 +20,6 @@ public class exam08_3 extends HttpServlet{
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		request.setCharacterEncoding("utf-8");
-		String id = request.getParameter("id");
-		String pw = request.getParameter("pw");
-		
-		request.setAttribute("id",id);
-		request.setAttribute("pw", pw);
 		
 		RequestDispatcher ds = request.getRequestDispatcher("JSP_exam/validation03_process.jsp");
 		ds.forward(request, response);
