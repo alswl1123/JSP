@@ -23,11 +23,11 @@ public class exam16_3 extends HttpServlet{
 		request.setCharacterEncoding("utf-8");
 		
 		String id = request.getParameter("id");
-		String pw = request.getParameter("pw");
+		String pwd = request.getParameter("pwd");
 		String name = request.getParameter("name");
 		
 		request.setAttribute("id", id);
-		request.setAttribute("pw", pw);
+		request.setAttribute("pwd", pwd);
 		request.setAttribute("name", name);
 		
 		RequestDispatcher ds = request.getRequestDispatcher("JSP_exam/insert02_process.jsp");

@@ -9,7 +9,7 @@
 <body>
 	<form method = "post" action = "16_3">
 		<p>아이디 : <input type = "text" name = "id">
-		<p>비밀번호 : <input type = "password" name = "pw">
+		<p>비밀번호 : <input type = "password" name = "pwd">
 		<p>이름 : <input type = "text" name = "name">
 		<p><input type = "submit" value = "전송">
 	</form>
