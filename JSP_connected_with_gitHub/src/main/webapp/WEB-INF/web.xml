@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app>
+  <display-name>JSP_connected_with_gitHub</display-name>
+  <welcome-file-list>
+    <welcome-file>JSP_example.html</welcome-file>
+  </welcome-file-list>
+  
+  <filter>
+  		<filter-name>Filter01</filter-name>
+  		<filter-class>examples.exam12_1F</filter-class>
+  </filter>
+  <filter-mapping>
+  		<filter-name>Filter01</filter-name>
+  		<url-pattern>/JSP_exam/filter01_process.jsp</url-pattern>
+  </filter-mapping>
+</web-app>
