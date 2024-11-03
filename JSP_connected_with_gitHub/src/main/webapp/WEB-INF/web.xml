@@ -13,4 +13,21 @@
   		<filter-name>Filter01</filter-name>
   		<url-pattern>/JSP_exam/filter01_process.jsp</url-pattern>
   </filter-mapping>
+  
+  <filter>
+  	<filter-name>Filter02</filter-name>
+  	<filter-class>examples.exam12_2F</filter-class>
+	<init-param>
+	  	<param-name>param1</param-name>
+  		<param-value>admin</param-value>	
+  	</init-param>
+  	<init-param>
+	  	<param-name>param2</param-name>
+  		<param-value>1234</param-value>	
+  	</init-param>
+  </filter>
+  <filter-mapping>
+  	<filter-name>Filter02</filter-name>
+  	<url-pattern>/JSP_exam/filter02_process.jsp</url-pattern>
+  </filter-mapping>
 </web-app>
