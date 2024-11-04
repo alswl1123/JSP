@@ -1,0 +1,24 @@
+SQL CRUD 예졔 코드
+
+데이터베이스
+만들기 : Create database sample;
+활성화 : Use sample;
+
+테이블
+만들기 : Create table 테이블명(열 이름, 데이터타입, 길이, 속성(not null, primary key 등);
+확인하기 : desc 테이블명;
+
+Create
+Insert into 테이블(컬럼명) VALUES 데이터;
+
+Read
+Select * From 테이블명
+Select 컬럼1, 컬럼2 from 테이블 where id = 값;
+
+Update
+Update 테이블명 Set 수정할 정보 where 바꿀 행의 위치
+ex. Update users SET pw = 1234 WHERE id = 2; //id 가 2인 사용자의 비밀번호 변경
+
+Delete
+Delete from users where id = 3; // id 가 3인 사용자 삭제하기
+
