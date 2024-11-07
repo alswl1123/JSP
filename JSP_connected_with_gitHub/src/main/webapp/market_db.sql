@@ -532,5 +532,249 @@ ALTER TABLE 고객 DROP COLUMN 가입날짜;
 
 ALTER TABLE 고객 ADD CONSTRAINT CHK_AGE CHECK(나이 >= 20); -- 11/06 여기까지 학습
 
+-- 11/07 여기부터 학습
+DROP DATABASE IF EXISTS market_db; -- 만약 market_db가 존재하면 우선 삭제한다.
+CREATE DATABASE market_db;
+
+USE market_db;
+DROP TABLE IF EXISTS member, buy; 
+CREATE TABLE member -- 회원 테이블
+( mem_id        CHAR(8) NOT NULL PRIMARY KEY, -- 사용자 아이디(PK)
+  mem_name       VARCHAR(10) NOT NULL, -- 이름
+  mem_number    INT NOT NULL,  -- 인원수
+  addr           CHAR(2) NOT NULL, -- 지역(경기,서울,경남 식으로 2글자만입력)
+  phone1      CHAR(3), -- 연락처의 국번(02, 031, 055 등)
+  phone2      CHAR(8), -- 연락처의 나머지 전화번호(하이픈제외)
+  height       SMALLINT,  -- 평균 키
+  debut_date   DATE  -- 데뷔 일자
+);
+CREATE TABLE buy -- 구매 테이블
+(  num       INT AUTO_INCREMENT NOT NULL PRIMARY KEY, -- 순번(PK)
+   mem_id     CHAR(8) NOT NULL, -- 아이디(FK)
+   prod_name    CHAR(6) NOT NULL, --  제품이름
+   group_name    CHAR(4)  , -- 분류
+   price        INT  NOT NULL, -- 가격
+   amount       SMALLINT  NOT NULL, -- 수량
+   FOREIGN KEY (mem_id) REFERENCES member(mem_id)
+);
+
+INSERT INTO member VALUES('TWC', '트와이스', 9, '서울', '02', '11111111', 167, '2015.10.19');
+INSERT INTO member VALUES('BLK', '블랙핑크', 4, '경남', '055', '22222222', 163, '2016.08.08');
+INSERT INTO member VALUES('WMN', '여자친구', 6, '경기', '031', '33333333', 166, '2015.01.15');
+INSERT INTO member VALUES('OMY', '오마이걸', 7, '서울', NULL, NULL, 160, '2015.04.21');
+INSERT INTO member VALUES('GRL', '소녀시대', 8, '서울', '02', '44444444', 168, '2007.08.02');
+INSERT INTO member VALUES('ITZ', '잇지', 5, '경남', NULL, NULL, 167, '2019.02.12');
+INSERT INTO member VALUES('RED', '레드벨벳', 4, '경북', '054', '55555555', 161, '2014.08.01');
+INSERT INTO member VALUES('APN', '에이핑크', 6, '경기', '031', '77777777', 164, '2011.02.10');
+INSERT INTO member VALUES('SPC', '우주소녀', 13, '서울', '02', '88888888', 162, '2016.02.25');
+INSERT INTO member VALUES('MMU', '마마무', 4, '전남', '061', '99999999', 165, '2014.06.19');
+
+INSERT INTO buy VALUES(NULL, 'BLK', '지갑', NULL, 30, 2);
+INSERT INTO buy VALUES(NULL, 'BLK', '맥북프로', '디지털', 1000, 1);
+INSERT INTO buy VALUES(NULL, 'APN', '아이폰', '디지털', 200, 1);
+INSERT INTO buy VALUES(NULL, 'MMU', '아이폰', '디지털', 200, 5);
+INSERT INTO buy VALUES(NULL, 'BLK', '청바지', '패션', 50, 3);
+INSERT INTO buy VALUES(NULL, 'MMU', '에어팟', '디지털', 80, 10);
+INSERT INTO buy VALUES(NULL, 'GRL', '혼공SQL', '서적', 15, 5);
+INSERT INTO buy VALUES(NULL, 'APN', '혼공SQL', '서적', 15, 2);
+INSERT INTO buy VALUES(NULL, 'APN', '청바지', '패션', 50, 1);
+INSERT INTO buy VALUES(NULL, 'MMU', '지갑', NULL, 30, 1);
+INSERT INTO buy VALUES(NULL, 'APN', '혼공SQL', '서적', 15, 1);
+INSERT INTO buy VALUES(NULL, 'MMU', '지갑', NULL, 30, 4);
+
+SELECT * FROM member;
+SELECT * FROM buy;
+
+USE market_db;
+CREATE VIEW v_member
+AS
+SELECT mem_id, mem_name, addr FROM member;
+
+SELECT * FROM v_member; -- 이 부분은 drop buy; 해야 제대로 보일 수도 있음
+
+SELECT mem_name, addr FROM v_member
+WHERE addr IN ('서울', '경기');
+
+SELECT B.mem_id, M.mem_name, B.prod_name, M.addr, CONCAT(M.phone1, M.phone2) '연락처'
+FROM buy B
+   INNER JOIN member M
+   ON B.mem_id = M.mem_id;
+
+CREATE VIEW v_memberbuy
+AS
+   SELECT B.mem_id, M.mem_name, B.prod_name, M.addr, CONCAT(M.phone1, M.phone2) '연락처'
+   FROM buy B
+      INNER JOIN member M
+      ON B.mem_id = M.mem_id;
+        
+SELECT * FROM v_memberbuy WHERE mem_name = '블랙핑크';
+
+-- 뷰의 실제 작동
+
+USE market_db;
+CREATE VIEW v_viewtest1
+AS
+   SELECT B.mem_id 'Member ID', M.mem_name AS 'Member Name', B.prod_name 'Product Name', -- 이 부분 전체 /일부 백틱 처리해도 동일한 결과 나옴
+      CONCAT(M.phone1, M.phone2) AS "OFFICE Phone"
+   FROM buy B
+      INNER JOIN member M
+        ON B.mem_id = M.mem_id;
+SELECT DISTINCT `Member ID`, `Member Name` FROM v_viewtest1;
+
+ALTER VIEW v_viewtest1
+AS
+   SELECT B.mem_id '회원 아이디', M.mem_name AS '회원 이름', B.prod_name "제품 이름",
+      CONCAT(M.phone1, M.phone2) AS "연락처"
+   FROM buy B
+      INNER JOIN member M
+        ON B.mem_id = M.mem_id;
+
+SELECT DISTINCT `회원 아이디`, `회원 이름` FROM v_viewtest1;
+
+-- 뷰의 삭제
+DROP VIEW v_viewtest1;
+    
+UPDATE v_member SET addr = '부산' WHERE mem_id = 'BLK';
+
+
+SELECT * FROM v_member;
+
+-- 이런 식으로 전체 열에 3개의 데이터만 입력할 수는 없다.
+INSERT INTO v_member(mem_id, mem_name, addr) VALUES ('BTS', '방탄소년단', '경기');
+
+CREATE VIEW v_height167
+AS
+   SELECT * FROM member WHERE height >= 167;
+
+SELECT * FROM v_height167;
+
+DELETE FROM v_height167 WHERE height < 167;
+
+INSERT INTO v_height167 VALUES('TRA', '티아라', 6, '서울', NULL, NULL, 159, '2005-01-01');
+
+SELECT * FROM v_height167;
+
+-- 오류 발생함
+ALTER VIEW v_height167
+AS
+   SELECT * FROM member WHERE height >= 167
+         WITH CHECK OPTION;
+
+INSERT INTO v_height167 VALUES('TOB', '텔레토비', 4, '영국', NULL, NULL, 140, '1995-01-01');
+
+USE market_db;
+DROP PROCEDURE IF EXISTS user_proc;
+DELIMITER $$
+CREATE PROCEDURE user_proc()
+BEGIN
+   SELECT * FROM member;
+END $$
+DELIMITER ;
+CALL user_proc();
+
+-- 프로시저 삭제
+DROP PROCEDURE user_proc;
+
+USE market_db;
+DROP PROCEDURE IF EXISTS user_proc1;
+DELIMITER $$
+CREATE PROCEDURE user_proc1(IN userName VARCHAR(10))
+BEGIN
+   SELECT * FROM member WHERE mem_name = userName;
+END $$
+DELIMITER ;
+CALL user_proc1('에이핑크');
+
+DROP PROCEDURE IF EXISTS user_proc2;
+DELIMITER $$
+CREATE PROCEDURE user_proc2(
+   IN userNumber INT,
+    IN userHeight INT
+)
+BEGIN
+   SELECT * FROM member
+      WHERE mem_number > userNumber AND height > userHeight;
+END $$
+DELIMITER ;
+CALL user_proc2(6, 165);
+
+DROP PROCEDURE IF EXISTS user_proc3;
+DELIMITER $$
+CREATE PROCEDURE user_proc3(
+IN txtValue CHAR(10),
+OUT outValue INT
+)
+BEGIN
+   INSERT INTO noTable VALUES(NULL, txtValue);
+    SELECT Max(id) INTO outValue FROM noTable;
+END $$
+DELIMITER ;
+
+DESC noTable;
+
+CREATE TABLE IF NOT EXISTS noTable
+(
+   id INT AUTO_INCREMENT PRIMARY KEY,
+    txt CHAR(10)
+);
+
+CALL user_proc3('테스트1', @myValue);
+CALL user_proc3('테스트2', @myValue);
+CALL user_proc3('테스트3', @myValue);
+SELECT CONCAT('입력된 ID 값 ==>', @myValue);
+
+DROP PROCEDURE IF EXISTS ifelse_proc;
+DELIMITER $$
+CREATE PROCEDURE ifelse_proc(
+   IN memName VARCHAR(10)
+)
+BEGIN
+   DECLARE debutYear INT; -- 변수 선언
+    SELECT YEAR(debut_date) INTO debutYear FROM member
+      WHERE mem_name = memName;
+   IF(debutYear >= 2015) THEN
+         SELECT '신인 가수네요. 화이팅하세요' AS '메시지';
+   ELSE
+         SELECT '고참 가수네요. 그동안 수고하셨어요.' AS '메시지';
+   END IF;
+
+END $$
+DELIMITER ;
+CALL ifelse_proc('오마이걸');
+
+DROP PROCEDURE IF EXISTS while_proc;
+DELIMITER $$
+CREATE PROCEDURE while_proc() -- 이 뒤에는 세미콜론 안 붙음. 주의
+BEGIN
+   DECLARE hap INT; -- 합계
+    DECLARE num INT; -- 1부터 100까지 증가
+    SET hap = 0; -- 합계 초기화
+    SET num = 1;
+    
+    WHILE (num <= 100) DO -- 100까지 반복
+      SET hap = hap + num;
+        SET num = num + 1; -- 숫자 증가
+   END WHILE;
+    SELECT hap AS '1~100 합계';
+
+END $$
+DELIMITER ;
+CALL while_proc();
+
+DROP PROCEDURE IF EXISTS dynamic_proc;
+DELIMITER $$
+CREATE PROCEDURE dynamic_proc(
+   IN tableName VARCHAR(20)
+)
+BEGIN
+   SET @sqlQuery = CONCAT('SELECT * FROM ', tableName);
+    PREPARE myQuery FROM @sqlQuery;
+    EXECUTE myQuery;
+    DEALLOCATE PREPARE myQuery;
+END $$
+DELIMITER ;
+CALL dynamic_proc('member');
+
+-- 11/07 여기까지 학습
 
 
