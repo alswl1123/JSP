@@ -237,7 +237,300 @@ INSERT INTO hongong2 VALUES (NULL, '재남', 35);
 SELECT * FROM hongong2;
 
 SHOW GLOBAL VARIABLES;
+
+-- 11/06 학습
+SET @myVar1 = 5;
+SET @myVar2 = 4.25;
+
+SELECT @myVar1;
+SELECT @myVar1 + @myVar2;
+
+SET @txt = '가수 이름 ==> ';
+SET @height = 166;
+SELECT @txt, mem_name FROM member WHERE height > @height;
+
+SET @count = 3;
+-- SELECT mem_name, height FROM member ORDER BY height LIMIT @count; 
+-- 문법상 오류!
+
+SET @count = 3;
+PREPARE mySQL FROM 'SELECT mem_name, height FROM member ORDER BY height LIMIT ?';
+EXECUTE mySQL USING @count;
+-- SELECT mem_name, height FROM member ORDER BY height LIMIT 3 과 같은 결과 출력
+
+SELECT AVG(price) AS '평균가격' FROM buy;
+
+SELECT CAST(AVG(price) AS SIGNED) '평균 가격' FROM buy;
+-- 또는
+SELECT CONVERT(AVG(price) , SIGNED) '평균 가격' FROM buy;
+
+SELECT CAST('2022$12$12' AS DATE);
+-- SELECT CAST('2022$12$12' , DATE); 얘는 요렇게 표시할 수 없군
+SELECT CAST('2022/12/12' AS DATE);
+SELECT CAST('2022%12%12' AS DATE);
+SELECT CAST('2022@12@12' AS DATE);
+
+SELECT num, CONCAT(CAST(price AS CHAR), 'X', CAST(amount AS CHAR), '=')
+   '가격 X 수량', price * amount '구매액'
+   FROM buy;
     
+SELECT '100' + '200';
+
+SELECT CONCAT('100', '200');
+
+SELECT CONCAT(100, '200');
+SELECT 100 + '200';
+
+SELECT *
+   FROM buy
+    INNER JOIN member
+    ON buy.mem_id = member.mem_id;
+
+SELECT *
+   FROM buy
+    INNER JOIN member
+    ON buy.mem_id = member.mem_id
+    WHERE buy.mem_id = 'GRL';
+-- WHERE : 완성된 테이블 중 조건 만족하는 것만 출력
+
+SELECT mem_id, mem_name, prod_name, addr, CONCAT(phone1, phone2) '연락처'
+   FROM buy
+      INNER JOIN member
+        ON buy.mem_id = member.mem_id;
+-- 오류 발생
+        
+SELECT buy.mem_id, mem_name, prod_name, addr, CONCAT(phone1, phone2) '연락처'
+   FROM buy
+      INNER JOIN member
+        ON buy.mem_id = member.mem_id;
+-- 열 출처를 보다 명확하게 해줘야 오류가 안 남.
+
+SELECT buy.mem_id, member.mem_name, buy.prod_name, member.addr, CONCAT(member.phone1, member.phone2) '연락처'
+   FROM buy
+      INNER JOIN member
+        ON buy.mem_id = member.mem_id;
+        
+SELECT B.mem_id, M.mem_name, B.prod_name, M.addr, CONCAT(M.phone1, M.phone2) '연락처'
+   FROM buy B
+      INNER JOIN member M
+        ON B.mem_id = M.mem_id;
+
+SELECT B.mem_id, M.mem_name, B.prod_name, M.addr
+   FROM buy B
+      INNER JOIN member M
+        ON B.mem_id = M.mem_id
+   ORDER BY M.mem_id;
+
+SELECT B.mem_id, M.mem_name, B.prod_name, M.addr
+   FROM buy B
+      LEFT OUTER JOIN member M
+        ON B.mem_id = M.mem_id
+   ORDER BY M.mem_id;
+
+SELECT M.mem_id, M.mem_name, B.prod_name, M.addr
+   From member M
+      LEFT OUTER JOIN buy B
+        ON M.mem_id = B.mem_id
+   ORDER BY M.mem_id;
+    
+SELECT M.mem_id, M.mem_name, B.prod_name, M.addr
+   From member M
+      INNER JOIN buy B
+        ON M.mem_id = B.mem_id
+   ORDER BY M.mem_id;
+
+SELECT *
+   From buy B
+      LEFT OUTER JOIN member M
+        ON M.mem_id = B.mem_id;
+        
+SELECT *
+   From member M
+      LEFT OUTER JOIN buy B
+        ON M.mem_id = B.mem_id;
+
+CREATE TABLE emp_table(emp CHAR(4), manager CHAR(4), phone VARCHAR(8));
+
+INSERT INTO emp_table VALUES ('대표', null , '0000');
+INSERT INTO emp_table VALUES ('영업이사', '대표' , '1111');
+INSERT INTO emp_table VALUES ('관리이사', '대표' , '2222');
+INSERT INTO emp_table VALUES ('정보이사', '대표' , '3333');
+INSERT INTO emp_table VALUES ('영업과장', '영업이사' , '1111-1');
+INSERT INTO emp_table VALUES ('경리부장', '관리이사' , '2222-1');
+INSERT INTO emp_table VALUES ('인사부장', '관리이사' , '2222-2');
+INSERT INTO emp_table VALUES ('개발팀장', '정보이사' , '3333-1');
+INSERT INTO emp_table VALUES ('개발주임', '정보이사' , '3333-1-1');
+
+SELECT A.emp "직원", B.emp "직속상관", B.phone "직속상관연락처"
+   FROM emp_table A
+      INNER JOIN emp_table B
+        ON A.manager = B.emp
+   WHERE A.emp = '경리부장';
+
+DROP PROCEDURE IF EXISTS ifProc3;
+DELIMITER $$
+CREATE PROCEDURE ifProc3()
+BEGIN
+   DECLARE debutDate DATE; -- 데뷔 일자
+    DECLARE curDate DATE; -- 오늘
+    DECLARE days INT; -- 활동한 일수
+    
+    SELECT debut_date INTO debutDate
+      FROM market_db.member
+        WHERE mem_id = 'APN';
+        
+        SET curDate = current_date(); -- 현재 날짜
+        SET days = datediff(curDate, debutDate); -- 날짜의 차이, 일 단위
+        
+        IF (days/365) >= 5 THEN -- 5년이 지났다면
+         SELECT concat('데뷔한 지 ' , days, '일이나 지났습니다. 핑순이들 축하합니다!');
+      ELSE
+         SELECT '데뷔한 지 ' + days + '일밖에 안 되었네요. 핑순이들 화이팅~';
+      END IF;
+   END $$
+DELIMITER ;
+CALL ifProc3;
+
+
+SELECT mem_id, SUM(price*amount) "총구매액"
+   FROM buy
+    GROUP BY mem_id -- 여기까지 쓰면 mem_id 4개, 총구매액 4개 나옴
+    ORDER BY SUM(price*amount) DESC; -- 총 구매액 큰 멤버부터 정렬 (A)
+    
+SELECT B.mem_id, M.mem_name, SUM(price*amount) "총구매액"
+   FROM buy B
+      INNER JOIN member M
+        ON B.mem_id = M.mem_id
+   GROUP BY B.mem_id
+    ORDER BY SUM(price*amount) DESC; -- A 결과에 mem_name 삽입 (B)
+    
+SELECT M.mem_id, M.mem_name, SUM(price*amount) "총구매액"
+   FROM buy B
+      RIGHT OUTER JOIN member M
+        ON B.mem_id = M.mem_id
+   GROUP BY M.mem_id
+    ORDER BY SUM(price*amount) DESC; -- B 결과와 함께 NULL 인 멤버도 출력(오름차순) (C)
+   
+SELECT M.mem_id, M.mem_name, SUM(price*amount) "총구매액",
+   CASE
+      WHEN (SUM(price*amount) >= 1500) THEN '최우수고객'
+        WHEN (SUM(price*amount) >= 1000) THEN '우수고객'
+        WHEN (SUM(price*amount) >= 1) THEN '일반고객'
+      ELSE '유령고객'
+   END "회원등급"
+    FROM buy B
+      RIGHT OUTER JOIN member M
+        ON B.mem_id = M.mem_id
+   GROUP BY M.mem_id
+    ORDER BY SUM(price*amount) DESC; -- C 결과에 회원등급 추가
+    
+DROP PROCEDURE IF EXISTS whileProc;
+DELIMITER $$
+CREATE PROCEDURE whileProc()
+BEGIN
+   DECLARE i INT; -- 1에서 100까지 증가할 변수
+    DECLARE hap INT; -- 더한 값을 누적할 변수
+    SET i = 1;
+    SET hap = 0;
+    
+    WHILE (i <= 100) DO
+      SET hap = hap + i; -- hap의 원래 값에 i를 더해서 다시 hap 에 넣으라는 의미
+        SET i = i + 1;     -- i의 원래 값에 1을 더해서 다시 i에 넣으라는 의미
+   END WHILE;
+    
+    SELECT '1부터 100까지의 합 ==>' , hap;
+    END $$
+DELIMITER 
+CALL whileProc();
+
+DROP PROCEDURE IF EXISTS whileProc2;
+DELIMITER $$
+CREATE PROCEDURE whileProc2()
+BEGIN
+   DECLARE i INT; -- 1에서 100까지 증가할 변수
+    DECLARE hap INT; -- 더한 값을 누적할 변수
+    SET i = 1;
+    SET hap = 0;
+    
+    myWhile:
+    WHILE(i <= 100) DO
+      IF(i%4 = 0) THEN
+         SET i = i + 1;
+            ITERATE myWhile; -- 지정한 label 문으로 가서 계속 진행
+      END IF;
+        SET hap = hap + i;
+        IF(hap > 1000) THEN
+         LEAVE myWhile; -- 지정한 label 문을 떠남. 즉 While 종료
+      END IF;
+        SET i = i+1;
+   END WHILE;
+    
+    SELECT '1부터 100까지의 합(4의 배수 제외), 1000 넘으면 종료 ==> ', hap;
+END $$
+DELIMITER ;
+CALL whileProc2();
+
+use market_db;
+PREPARE myQuery FROM 'SELECT * FROM member WHERE mem_id = "BLK"';
+EXECUTE myQuery;
+DEALLOCATE PREPARE myQuery; -- close() 랑 같은 기능
+
+DROP TABLE IF EXISTS gate_table;
+CREATE TABLE gate_table (id INT AUTO_INCREMENT PRIMARY KEY, entry_time DATETIME);
+
+SET @curDATE = CURRENT_TIMESTAMP(); -- 현재 날짜와 시간
+
+PREPARE myQuery FROM 'INSERT INTO gate_table VALUES (NULL, ?)';
+EXECUTE myQuery USING @curDate;
+DEALLOCATE PREPARE myQuery;
+
+SELECT * FROM gate_table;
+
+CREATE TABLE 고객 
+(
+    고객아이디 VARCHAR(20) PRIMARY KEY,
+     고객이름 VARCHAR(10) NOT NULL,
+     나이 INT,
+     등급 VARCHAR(10) NOT NULL,
+     직업 VARCHAR(20),
+     적립금 INT DEFAULT 0
+);
+
+CREATE TABLE 제품 
+(
+   제품번호 CHAR(3) PRIMARY KEY,
+    제품명 VARCHAR(20),
+    재고량 INT,
+    단가 INT,
+    제조업체 VARCHAR(20)
+    CHECK (재고량 >= 0 AND 재고량 <= 10000)
+);
+
+CREATE TABLE 주문
+(
+   주문번호 CHAR(3) PRIMARY KEY,
+    주문고객 VARCHAR(20),
+    주문제품 CHAR(3),
+    수량 INT,
+    배송지 VARCHAR(30),
+    주문일자 DATE,
+    FOREIGN KEY(주문고객) REFERENCES 고객(고객아이디),
+    FOREIGN KEY(주문제품) REFERENCES 제품(제품번호)
+);
+
+CREATE TABLE 배송업체
+(
+   업체번호 CHAR(3) PRIMARY KEY,
+    업체명 VARCHAR(20),
+    주소 VARCHAR(100),
+    전화번호 VARCHAR(20)
+);
+
+ALTER TABLE 고객 ADD 가입날짜 DATE;
+
+ALTER TABLE 고객 DROP COLUMN 가입날짜;
+
+ALTER TABLE 고객 ADD CONSTRAINT CHK_AGE CHECK(나이 >= 20); -- 11/06 여기까지 학습
 
 
 
