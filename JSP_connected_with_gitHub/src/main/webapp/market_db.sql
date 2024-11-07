@@ -1,3 +1,5 @@
+-- 11/05 학습
+
 CREATE DATABASE market_db;
 
 -- use 명령어를 사용하면 테이블 이름만 명시해도 된다.
@@ -60,3 +62,182 @@ INSERT INTO buy VALUES(NULL, 'MMU', '지갑', NULL, 30, 4);
 
 SELECT * FROM member;
 SELECT * FROM buy;
+
+SELECT mem_name FROM member;
+
+SELECT addr "주소", debut_date "데뷔일자", mem_name "멤버이름" FROM member;
+
+SELECT mem_id, mem_name
+	FROM member
+	where height <= 162;
+    
+SELECT mem_name, mem_number
+	FROM member
+    -- 요 위에 세미콜론 찍으면 안 됨
+    WHERE height >= 165 AND mem_number < 6;
+    
+SELECT * FROM member 
+	WHERE mem_name = '블랙핑크';
+
+SELECT * FROM member
+	WHERE mem_number = 4;
+    
+SELECT mem_name, height, mem_number
+	FROM member
+	WHERE height >= 165 AND mem_number > 6;
+    
+SELECT mem_name, height, mem_number
+	FROM member
+    WHERE height >= 165 OR mem_number > 6;
+
+SELECT mem_name, height
+	FROM member
+	WHERE height >= 163 AND height <= 165;
+    
+SELECT mem_name, height
+	 FROM member
+     WHERE height BETWEEN 163 AND 165;
+
+SELECT mem_name, addr
+    FROM member
+	WHERE addr = '경기' OR addr = '전남' OR addr = '경남';
+    
+SELECT mem_name, addr
+    FROM member
+    WHERE addr IN('경기', '전남', '경남');
+    
+SELECT *
+    FROM member
+	WHERE mem_name LIKE '우%';
+    -- 문자 중에 가장 강력한 건 like. 검색 엔진에 많이 쓰임
+    
+SELECT *
+    FROM member
+	WHERE mem_name LIKE '__핑크';
+    -- 언더바 2개
+    
+SELECT mem_id, mem_name, debut_name
+   FROM member
+    ORDER BY debut_date;
+    
+SELECT mem_id, mem_name, debut_date
+   FROM member
+    ORDER BY debut_date DESC;
+    
+SELECT mem_id, mem_name, debut_date, height
+   FROM member
+   ORDER BY height DESC;
+    -- where height >= 164; -- where와 order 순서 틀려서 오류 발생!
+    
+SELECT mem_id, mem_name, debut_date, height
+    FROM member
+    WHERE height >= 164
+    ORDER BY height DESC;
+    
+SELECT mem_id, mem_name, debut_date, height
+    FROM member
+    WHERE height >= 164
+	ORDER BY height DESC, debut_date ASC;
+    
+SELECT mem_name, debut_date
+    FROM member
+    ORDER BY debut_date
+    LIMIT 3;
+
+SELECT *
+   FROM member
+    LIMIT 3;
+    -- order by debut_date; -- 이렇게 쓰면 순서 오류!
+
+SELECT mem_name, height
+    FROM member
+    ORDER BY height DESC
+    LIMIT 3, 2;
+
+SELECT addr 
+   FROM member;
+
+SELECT addr 
+   FROM member 
+   ORDER BY addr;
+
+SELECT distinct addr 
+   FROM member;
+
+SELECT mem_id, amount 
+    FROM buy 
+	ORDER BY mem_id;
+
+SELECT mem_id, sum(amount) 
+   FROM buy
+    GROUP BY mem_id;
+
+SELECT mem_id, SUM(amount) 
+   FROM buy;
+
+select mem_id "회원 아이디", sum(amount) "총 구매 개수"
+   FROM buy
+    GROUP BY mem_id;
+
+select mem_id "회원 아이디", sum(price * amount) "총 구매 금액"
+   FROM buy
+    GROUP BY mem_id;
+    
+SELECT AVG(amount) "평균 구매 개수" 
+   FROM buy;
+
+SELECT mem_id, AVG(amount) "평균 구매 개수"
+   FROM buy
+    GROUP BY mem_id;
+
+SELECT COUNT(*) FROM member;
+
+SELECT COUNT(phone1) "연락처가 있는 회원" FROM member;
+
+SELECT mem_id "회원 아이디", SUM(price * amount) "총 구매 금액"
+   FROM buy
+    GROUP BY mem_id;
+    
+SELECT mem_id "회원 아이디", SUM(price * amount) "총 구매 금액"
+   FROM buy
+    WHERE SUM(price * amount) > 1000;
+    -- GROUP BY mem_id;
+    
+SELECT mem_id "회원 아이디", SUM(price * amount) "총 구매 금액"
+   FROM buy
+    GROUP BY mem_id
+    HAVING SUM(price * amount) > 1000;
+
+SELECT mem_id "회원 아이디", SUM(price * amount) "총 구매 금액"
+   FROM buy
+    GROUP BY mem_id
+    HAVING SUM(price * amount) > 1000
+    ORDER BY SUM(price*amount) DESC;
+
+CREATE TABLE hongong1 (toy_id INT, toy_name CHAR(4), age INT);
+INSERT INTO hongong1 VALUES (1, '우디', 25);
+INSERT INTO hongong1 (toy_id, toy_name) VALUES (2, '버즈');
+INSERT INTO hongong1 (toy_name, age, toy_id) VALUES ('제시', 20, 3);
+
+CREATE TABLE hongong2 (
+   toy_id INT AUTO_INCREMENT PRIMARY KEY,
+   toy_name CHAR(4),
+   age INT
+   );
+    
+INSERT INTO hongong2 VALUES (NULL, '보핍', 25);
+INSERT INTO hongong2 VALUES (NULL, '슬링키', 22);
+INSERT INTO hongong2 VALUES (NULL, '렉스', 21);
+SELECT * FROM hongong2;
+
+SELECT LAST_INSERT_ID();
+
+ALTER TABLE hongong2 auto_increment=100;
+INSERT INTO hongong2 VALUES (NULL, '재남', 35);
+SELECT * FROM hongong2;
+
+SHOW GLOBAL VARIABLES;
+    
+
+
+
