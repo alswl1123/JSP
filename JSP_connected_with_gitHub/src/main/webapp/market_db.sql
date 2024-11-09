@@ -777,4 +777,186 @@ CALL dynamic_proc('member');
 
 -- 11/07 여기까지 학습
 
+-- 11/08 여기부터 학습
+USE market_db;
+CREATE TABLE table1
+(
+col1 INT PRIMARY KEY,
+    col2 INT,
+    col3 INT
+);
+
+SHOW INDEX FROM table1; -- PK 확인됨
+
+CREATE TABLE table2
+(
+	col1 INT PRIMARY KEY,
+    col2 INT UNIQUE,
+    col3 INT UNIQUE
+);
+
+SHOW INDEX FROM table2; -- PK 가 아닌 것도 보임
+
+USE market_db;
+DROP TABLE IF EXISTS buy, member;
+CREATE TABLE member
+(
+mem_id CHAR(8),
+    mem_name VARCHAR(10),
+    mem_number INT,
+    addr CHAR(2)
+);
+
+INSERT INTO member VALUES('TWC', '트와이스', 9, '서울');
+INSERT INTO member VALUES('BLK', '블랙핑크', 4, '경남');
+INSERT INTO member VALUES('WMN', '여자친구', 6, '경기');
+INSERT INTO member VALUES('OMY', '오마이걸', 7, '서울');
+
+SELECT * FROM member;
+
+-- 클러스터형 인덱스가 생성된 열로 데이터가 자동 정렬됨(오름차순)
+ALTER TABLE member
+ADD CONSTRAINT
+    PRIMARY KEY (mem_id);
+    
+SELECT * FROM member;
+
+-- UNIQUE 는 정렬 안 됨 (클러스터형을 안 해보고 이거 실행해보면 알 수 있다)
+ALTER TABLE member
+ADD CONSTRAINT
+    UNIQUE (mem_id);
+    
+SELECT * FROM member;
+
+SHOW INDEX FROM member;
+
+-- 인덱스 삭제하는 방법 (DROP INDEX index_name ON table_name;)
+DROP INDEX idx_member_mem_number
+ON member;
+
+
+CREATE INDEX idx_member_addr
+ON member(addr);
+
+SHOW INDEX FROM member;
+SHOW TABLE STATUS LIKE 'member';
+-- ANALYZE TABLE member; 없이 이것만 작성하면 제대로 출력 안됨
+ANALYZE TABLE member;
+SHOW TABLE STATUS LIKE 'member'; -- ANALYZE TABLE member; 넣고 Index_length 가 제대로 나오는 것 확인
+
+
+-- 오류 발생 (Error Code: 1062. Duplicate entry '4' for key 'member.idx_member_mem_number')
+-- 오류 발생하려면 4 라는 데이터가 중복된, market_db 데이터가 있어야 함 (스크롤 위쪽!!)
+-- 꼭 작성해야 하면 UNIQUE 빼기
+CREATE UNIQUE INDEX idx_member_mem_number
+ON member(mem_number);
+
+CREATE UNIQUE INDEX idx_member_mem_name
+ON member(mem_name);
+
+SHOW INDEX FROM member;
+
+-- 오류 발생(Error Code: 1062. Duplicate entry '마마무' for key 'member.idx_member_mem_name')
+INSERT INTO member VALUES ('MOO', '마마무', 2, '태국', '001', '12341234', 155, '2020.10.10');
+
+ANALYZE TABLE member;
+SHOW INDEX FROM member;
+SELECT * FROM member;
+
+SELECT mem_id, mem_name, addr
+FROM member
+    WHERE mem_name = '에이핑크';
+    
+CREATE INDEX idx_member_mem_number
+ON member(mem_number);
+ANALYZE TABLE member;
+
+SELECT mem_name, mem_number
+FROM member
+WHERE mem_number >= 7;
+
+SELECT mem_name, mem_number
+FROM member
+WHERE mem_number >= 1;
+
+-- 스토어드 함수 생성 권한 허용. 1은 true 라는 뜻. 한번만 설정해주면 됨.
+-- 0 row(s) affected, 1 warning(s): 1287 '@@log_bin_trust_function_creators' is deprecated and will be removed in a future release. 나와도 정상.
+SET GLOBAL log_bin_trust_function_creators = 1;
+
+USE market_db;
+DROP FUNCTION IF EXISTS sumFunc;
+DELIMITER $$
+CREATE FUNCTION sumFunc(number1 INT, number2 INT)
+RETURNS INT
+BEGIN
+RETURN number1 + number2;
+END $$
+DELIMITER ;
+SELECT sumFunc(100, 200) AS '합계';
+
+DROP FUNCTION IF EXISTS calcYearFunc;
+DELIMITER $$
+CREATE FUNCTION calcYearFunc(dYear INT)
+RETURNS INT
+BEGIN
+DECLARE runYear INT; -- 활동기간(연도)
+    SET runYear = YEAR(CURDATE()) - dYear;
+    RETURN runYear;
+END $$
+DELIMITER ;
+
+SELECT calcYearFunc(2010) AS '활동햇수';
+
+SELECT calcYearFunc(2007) INTO @debut2007;
+SELECT calcYearFunc(2013) INTO @debut2013;
+SELECT @debut2007-@debut2013 AS '2007과 2013 차이';
+
+SELECT mem_id, mem_name, calcYearFunc(YEAR(debut_date)) AS '활동햇수'
+FROM member;
+
+SHOW CREATE FUNCTION calcYearFunc;
+    
+-- 실행은 안 함
+DROP FUNCTION calcYearFunc;
+
+USE market_db;
+DROP PROCEDURE IF EXISTS cursor_proc;
+DELIMITER $$
+CREATE PROCEDURE cursor_proc()
+BEGIN
+DECLARE memNumber INT;
+    DECLARE cnt INT DEFAULT 0;
+    DECLARE totNumber INT DEFAULT 0;
+    DECLARE endOfRow BOOLEAN DEFAULT FALSE;
+    
+    DECLARE memberCursor CURSOR FOR
+SELECT mem_number FROM member;
+        
+DECLARE CONTINUE HANDLER
+FOR NOT FOUND SET endOfRow = TRUE;
+
+OPEN memberCursor;
+
+cursor_loop : LOOP
+FETCH memberCurSor INTO memNumber;
+IF endOfRow THEN
+LEAVE cursor_loop; -- 이 부분을 빼먹으면 안돼!
+END IF;
+
+SET cnt = cnt + 1;
+SET totNumber = totNumber + memNumber;
+END LOOP cursor_loop;
+
+SELECT (totNumber/cnt) AS '회원의 평균 인원 수';
+
+CLOSE memberCursor;
+END $$
+DELIMITER ;
+
+CALL cursor_proc();
+
+-- 11/08 여기까지 학습
+
+
+
 
