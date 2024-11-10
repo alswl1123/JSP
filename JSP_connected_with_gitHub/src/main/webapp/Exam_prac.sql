@@ -152,7 +152,69 @@ SELECT 제품명, 단가, 제조업체
 FROM 제품
 WHERE 단가 >= 2000 AND 단가 <= 3000;
 
+-- INSERT문
+-- INSERT INTO 테이블_이름[(속성_리스트)]
+-- VALUES (속성값_리스트);
 
+-- 예제 7-47 (새로운 고객 정보 삽입, 삽입된 결과 확인)
+INSERT INTO 고객(고객아이디, 고객이름, 나이, 등급, 직업, 적립금)
+VALUES ('strawberry', '최유경', 30, 'vip', '공무원', 100);
+
+SELECT * FROM 고객;
+
+-- 예제 7-48 (새로운 고객 정보 삽입, 직업은 null, null인지 확인해보자)
+INSERT INTO 고객(고객아이디, 고객이름, 나이, 등급, 적립금)
+VALUES ('tomato', '정은심', 36, 'gold', 4000);
+
+SELECT * FROM 고객;
+
+-- UPDATE문
+-- UPDATE 테이블_이름
+-- SET 속성_이름1 = 값1, 속성_이름2 = 값2, ...
+-- [WHERE 조건];
+
+-- 예제 7-49 (제품 테이블에서 제품번호가 p03 인 제품의 제품명을 쿵떡파이 -> 통큰파이로 수정)
+UPDATE 제품
+SET 제품명 = '통큰파이'
+WHERE 제품번호 = 'p03';
+
+SELECT * FROM 제품;
+
+-- 예제 7-50 (모든 제품 단가 10% 인상, 인상 내용 확인)
+UPDATE 제품
+SET 단가 = 단가 * 1.1;
+-- 오류 발생함
+-- Error Code: 1175. You are using safe update mode and you tried to update a table without a WHERE that uses a KEY column.  To disable safe mode, toggle the option in Preferences -> SQL Editor and reconnect.
+-- 해결 : Edit > preferences > SQL Editor > Safe Updates 옵션 해제
+
+SELECT * FROM 제품;
+
+-- 예제 7-51 (정소화 고객이 주문한 제품의 주문수량 5개로 수정, 수정 내용 확인)
+UPDATE 주문
+SET 수량 = 5
+WHERE 주문고객 IN (SELECT 고객아이디 FROM 고객 WHERE 고객이름 = '정소화');
+
+SELECT * FROM 주문;
+
+-- DELETE문
+-- DELETE FROM 테이블_이름 [WHERE 조건];
+
+-- 예제 7-52 (주문일자가 2019/05/22인 주문내역 삭제, 삭제 여부 확인)
+DELETE FROM 주문
+WHERE 주문일자 = '2019-05-22';
+
+SELECT * FROM 주문; -- p10 내용 삭제됨
+
+-- 예제 7-53 (정소화 고객 주문내역 삭제, 삭제 여부 확인)
+DELETE FROM 주문
+WHERE 주문고객 IN (SELECT 고객아이디 FROM 고객 WHERE 고객이름 = '정소화');
+
+SELECT * FROM 주문; -- p01 내용 삭제됨
+
+-- 예제 7-54 (주문 테이블 내역모두 삭제, 삭제 여부 확인)
+DELETE FROM 주문; -- SELECT문과 달리 * 표시가 필요x
+
+SELECT * FROM 주문;
 
 
 
