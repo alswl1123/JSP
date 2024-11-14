@@ -174,6 +174,7 @@ CALL whileProc();
 
 -- ------------------------------------------------------------------
 
+-- ITERATE 는 반복문을 계속 진행하고, LEAVE 는 반복문을 빠져나갑니다.
 DROP PROCEDURE IF EXISTS whileproc2;
 DELIMITER $$
 CREATE PROCEDURE whileProc2()
@@ -201,4 +202,21 @@ END $$
 DELIMITER ;
 CALL whileProc2();
 
+-- ------------------------------------------------------------------
+
+-- 동적 SQL
+-- DEALLOCATE 는 close() 랑 같은 기능
+use market_db;
+PREPARE myQuery FROM 'SELECT * FROM member WHERE mem_id = "BLK"';
+EXECUTE myQuery;
+DEALLOCATE PREPARE myQuery;
+
+DROP TABLE IF EXISTS gate_table;
+CREATE TABLE gate_table (id INT AUTO_INCREMENT PRIMARY KEY, entry_time DATETIME);
+SET @curDate = CURRENT_TIMESTAMP(); -- 현재 날짜와 시간
+PREPARE myQuery FROM 'INSERT INTO gate_table VALUES(Null, ?)';
+EXECUTE myQuery USING @curDate;
+DEALLOCATE PREPARE myQuery;
+
+SELECT * FROM gate_table;
 
